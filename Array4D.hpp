@@ -71,9 +71,6 @@ public:
         std::valarray<size_t> sizes_varr((arrayToValarray(sizes)));
         std::array<size_t, 4> gstrides = getGStrides();
         std::valarray<size_t> gstrides_varr(arrayToValarray(gstrides));
-        /*std::cout << "flat_start_pos: " << flat_start_pos << std::endl;
-        std::cout << "sizes_varr: " << sizes_varr << std::endl;
-        std::cout << "gstrides_varr: " << gstrides_varr << std::endl;*/
         std::valarray<size_t> indices(sizes[3]*sizes[2]*sizes[1]*sizes[0]);
         for (size_t i=0;i<sizes[0]; i++)
         {
@@ -84,11 +81,8 @@ public:
                     for (size_t l=0;l<sizes[3]; l++)
                     {
                         size_t indpos = pos_to_flat({l,k,j,i});
-                        //std::cout << "indpos: " << indpos << std::endl;
                         size_t pos = flat_start_pos + i*gstrides[0] + j*gstrides[1] + k*gstrides[2] + l*gstrides[3];
-                        //std::cout << "pos: " << pos << std::endl;
                         indices[indpos] = pos;
-                        //std::cout << "value_associated: " << data[pos] << std::endl;
                     }
                 }
             }
@@ -101,9 +95,6 @@ public:
         std::valarray<size_t> sizes_varr((arrayToValarray(sizes)));
         std::array<size_t, 4> gstrides = getGStrides();
         std::valarray<size_t> gstrides_varr(arrayToValarray(gstrides));
-        /*std::cout << "flat_start_pos: " << flat_start_pos << std::endl;
-        std::cout << "sizes_varr: " << sizes_varr << std::endl;
-        std::cout << "gstrides_varr: " << gstrides_varr << std::endl;*/
         return std::gslice(flat_start_pos, sizes_varr, gstrides_varr);
     }
     inline size_t pos_to_flat(const std::array<size_t, 4>& pos) const
@@ -117,9 +108,6 @@ public:
     }
     std::array<size_t, 4> getGStrides() const
     {
-        //return {1, strides[0], strides[1]*strides[0], strides[2]*strides[1]*strides[0]};
-        //return {strides[2]*strides[1]*strides[0], strides[1]*strides[0], strides[0], 1};
-        //return {1, strides[3], strides[3]*strides[2], strides[3]*strides[2]*strides[1]};
         return {strides[3]*strides[2]*strides[1], strides[3]*strides[2], strides[3], 1};
     }
     std::array<size_t, 4> getStrides() const
