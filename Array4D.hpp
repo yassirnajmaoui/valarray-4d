@@ -1,17 +1,17 @@
-#include <valarray>
-#include <iostream>
-#include <fstream>
 #include <array>
+#include <fstream>
+#include <iostream>
+#include <valarray>
 
-template<typename T>
-std::ostream& operator<< (std::ostream& os, std::valarray<T> va)
+template <typename T>
+std::ostream& operator<<(std::ostream& os, std::valarray<T> va)
 {
     for (auto&& i : va)
         os << i << " ";
     return os;
 }
 
-template<typename T, size_t sz>
+template <typename T, size_t sz>
 static std::valarray<T> arrayToValarray(std::array<T, sz> arr)
 {
     std::valarray<T> varr(sz);
@@ -20,12 +20,11 @@ static std::valarray<T> arrayToValarray(std::array<T, sz> arr)
 }
 
 template <typename T>
-class Array4D
-{
+class Array4D {
 public:
-    Array4D(const std::array<size_t,4>& p_strides) :
-    data(p_strides[0]*p_strides[1]*p_strides[2]*p_strides[3]),
-    strides(p_strides)
+    Array4D(const std::array<size_t, 4>& p_strides)
+        : data(p_strides[0] * p_strides[1] * p_strides[2] * p_strides[3])
+        , strides(p_strides)
     {
     }
     const std::valarray<T>& getData() const
@@ -50,17 +49,18 @@ public:
     {
         // The axis direction is the dimension in which to generate
         // the sliced ("line")
-        if(axis_direction>3) throw 403; // Error, outside bounds, forbidden
+        if (axis_direction > 3)
+            throw 403; // Error, outside bounds, forbidden
         size_t flat_start_pos = pos_to_flat(start_pos);
 
         size_t size_axis_dir = strides[axis_direction];
 
-        if(start_pos[axis_direction] != 0) throw 404;
+        if (start_pos[axis_direction] != 0)
+            throw 404;
         // Error, the line must start in the beginning of the specified dimension
 
         size_t skip_amount = 1; // Amount to skip for selected axis direction
-        for(size_t curr_axis = axis_direction; curr_axis > 0; --curr_axis)
-        {
+        for (size_t curr_axis = axis_direction; curr_axis > 0; --curr_axis) {
             skip_amount *= strides[curr_axis];
         }
         return data[std::slice(flat_start_pos, size_axis_dir, skip_amount)];
@@ -71,17 +71,13 @@ public:
         std::valarray<size_t> sizes_varr((arrayToValarray(sizes)));
         std::array<size_t, 4> gstrides = getGStrides();
         std::valarray<size_t> gstrides_varr(arrayToValarray(gstrides));
-        std::valarray<size_t> indices(sizes[3]*sizes[2]*sizes[1]*sizes[0]);
-        for (size_t i=0;i<sizes[0]; i++)
-        {
-            for (size_t j=0;j<sizes[1]; j++)
-            {
-                for (size_t k=0;k<sizes[2]; k++)
-                {
-                    for (size_t l=0;l<sizes[3]; l++)
-                    {
-                        size_t indpos = pos_to_flat({l,k,j,i});
-                        size_t pos = flat_start_pos + i*gstrides[0] + j*gstrides[1] + k*gstrides[2] + l*gstrides[3];
+        std::valarray<size_t> indices(sizes[3] * sizes[2] * sizes[1] * sizes[0]);
+        for (size_t i = 0; i < sizes[0]; i++) {
+            for (size_t j = 0; j < sizes[1]; j++) {
+                for (size_t k = 0; k < sizes[2]; k++) {
+                    for (size_t l = 0; l < sizes[3]; l++) {
+                        size_t indpos = pos_to_flat({ l, k, j, i });
+                        size_t pos = flat_start_pos + i * gstrides[0] + j * gstrides[1] + k * gstrides[2] + l * gstrides[3];
                         indices[indpos] = pos;
                     }
                 }
@@ -99,16 +95,15 @@ public:
     }
     inline size_t pos_to_flat(const std::array<size_t, 4>& pos) const
     {
-        size_t flat_pos = 
-          pos[0]*(strides[3]*strides[2]*strides[1])
-        + pos[1]*(strides[3]*strides[2])
-        + pos[2]*strides[3]
-        + pos[3];
+        size_t flat_pos = pos[0] * (strides[3] * strides[2] * strides[1])
+            + pos[1] * (strides[3] * strides[2])
+            + pos[2] * strides[3]
+            + pos[3];
         return flat_pos;
     }
     std::array<size_t, 4> getGStrides() const
     {
-        return {strides[3]*strides[2]*strides[1], strides[3]*strides[2], strides[3], 1};
+        return { strides[3] * strides[2] * strides[1], strides[3] * strides[2], strides[3], 1 };
     }
     std::array<size_t, 4> getStrides() const
     {
@@ -116,31 +111,31 @@ public:
     }
     size_t getTotalSize() const
     {
-        return strides[0]*strides[1]*strides[2]*strides[3];
+        return strides[0] * strides[1] * strides[2] * strides[3];
     }
 
-	bool readFromFile(std::string fname)
-	{
-		std::ifstream file;
-		file.open(fname.c_str(), std::ios::binary | std::ios::in);
-		file.read(std::begin(data), getTotalSize() * sizeof(T));
-		return true;
-	}
-	bool writeToFile(std::string fname) const
-	{
-		std::ofstream file;
-		file.open(fname.c_str(), std::ios::binary | std::ios::out);
-		if (!file.is_open())
-		{
-			return false;
-		}
-		file.write((char*)std::begin(data), getTotalSize() * sizeof(T));
-		return true;
-	}
+    bool readFromFile(std::string fname)
+    {
+        std::ifstream file;
+        file.open(fname.c_str(), std::ios::binary | std::ios::in);
+        file.read(std::begin(data), getTotalSize() * sizeof(T));
+        return true;
+    }
+    bool writeToFile(std::string fname) const
+    {
+        std::ofstream file;
+        file.open(fname.c_str(), std::ios::binary | std::ios::out);
+        if (!file.is_open()) {
+            return false;
+        }
+        file.write((char*)std::begin(data), getTotalSize() * sizeof(T));
+        return true;
+    }
     void fill(T value)
     {
         std::fill(std::begin(data), std::end(data), value);
     }
+
 public:
     std::valarray<T> data;
     std::array<size_t, 4> strides;
